@@ -1,0 +1,10 @@
+{
+  "name": "Spiritual Exchange API",
+  "db": "db",
+  "jwtPrivateKey": "jwtPrivateKey",
+  "baseUrl": "baseUrl",
+  "S3_AWS_ACCESS_KEY_ID": "BUCKETEER_AWS_ACCESS_KEY_ID",
+  "S3_AWS_SECRET_ACCESS_KEY": "BUCKETEER_AWS_SECRET_ACCESS_KEY",
+  "S3_AWS_REGION": "BUCKETEER_AWS_REGION",
+  "S3_BUCKET_NAME": "BUCKETEER_BUCKET_NAME"
+}
