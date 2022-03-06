@@ -10,23 +10,38 @@ const Product = mongoose.model(
       index: true,
       trim: true,
     },
-    category: {
-      type: String,
+    categories: {
+      type: [String],
       required: true,
-      index: true,
     },
     collections: {
       type: [String],
     },
-    featuredImage: String,
+    featuredImage: {
+      type: new mongoose.Schema({
+        url: String,
+        thumbnail: String,
+        retina: String,
+      }),
+      required: true,
+    },
     images: {
-      type: [String],
+      type: [
+        new mongoose.Schema({
+          url: String,
+          thumbnail: String,
+          retina: String,
+        }),
+      ],
     },
     description: {
       type: String,
     },
     owner: {
-      type: mongoose.SchemaTypes.Mixed,
+      type: new mongoose.Schema({
+        _id: String,
+        displayName: String,
+      }),
       required: true,
     },
     tags: {
@@ -58,12 +73,24 @@ const Product = mongoose.model(
 
 const validateProductSchema = {
   title: Joi.string().min(3).required(),
-  category: Joi.string().required(),
+  categories: Joi.array().items(Joi.string()).required(),
   collections: Joi.array().items(Joi.string()),
-  images: Joi.array().items(Joi.string()),
+  images: Joi.array().items(
+    Joi.object().keys({
+      url: Joi.any(),
+      thumbnail: Joi.any(),
+      retina: Joi.any(),
+      _id: Joi.any(),
+    })
+  ),
   description: Joi.string(),
   tags: Joi.array().items(Joi.string()),
-  featuredImage: Joi.string().required(),
+  featuredImage: Joi.object().keys({
+    url: Joi.any(),
+    thumbnail: Joi.any(),
+    retina: Joi.any(),
+    _id: Joi.any(),
+  }),
   status: Joi.string().required(),
 };
 

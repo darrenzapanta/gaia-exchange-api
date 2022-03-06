@@ -7,8 +7,14 @@ const public = require("../routes/public/index");
 const bodyParser = require("body-parser");
 
 module.exports = function (app) {
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(
+    express.json({
+      verify: (req, res, buf) => {
+        req.rawBody = buf;
+      },
+    })
+  );
+  app.use(express.urlencoded({ extended: true }));
   app.use("/api/admin", admin),
     app.use("/api/public", public),
     app.use("/api/user", user);

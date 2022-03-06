@@ -4,7 +4,7 @@ const { Product } = require("../../models/product");
 const validatePagination = require("../../utils/pagination");
 
 const productFields =
-  "title category owner featuredImage description questions images";
+  "title categories owner featuredImage description questions images";
 //get all products
 router.get("/", async (req, res) => {
   const { page, limit, skip } = validatePagination(req);

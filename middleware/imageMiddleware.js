@@ -4,6 +4,7 @@ const config = require("config");
 const { v4: uuidv4 } = require("uuid");
 const aws = require("aws-sdk");
 const winston = require("winston/lib/winston/config");
+const handleize = require("../utils/handleize");
 
 const imageMiddleware = (fields) => {
   const maxSize = 3 * 1024 * 1024; // 3mb
@@ -22,7 +23,8 @@ const imageMiddleware = (fields) => {
       cb(null, { fieldName: file.fieldname });
     },
     key: function (req, file, cb) {
-      const fileName = file.originalname.toLowerCase().split(" ").join("-");
+      const nameArr = file.originalname.split(".");
+      const fileName = handleize(nameArr[0]) + "." + nameArr[1];
       cb(null, "public/" + uuidv4() + "-" + fileName);
     },
   });
@@ -47,7 +49,6 @@ const imageMiddleware = (fields) => {
 
   return (req, res, next) => {
     upload(req, res, function (err) {
-      console.log(req.files);
       if (req.fileValidationError) {
         return res.status(400).send(req.fileValidationError);
       }
@@ -61,28 +62,29 @@ const imageMiddleware = (fields) => {
         winston.error(err);
         return res.status(400).send("Upload failed");
       }
-
-      fields.forEach((field) => {
-        const key = field.name;
-        const files = req.files;
-        if (files[key]) {
-          if (field["maxCount"] !== undefined && field["maxCount"] == 1) {
-            req.body[key] = {
-              url: files[key][0].key,
-              thumbnail: files[key][0].key,
-              retina: files[key][0].key,
-            };
-          } else {
-            req.body[key] = files[key].map((file) => {
-              return {
-                url: file.key,
-                thumbnail: file.key,
-                retina: file.key,
+      if (req.files) {
+        fields.forEach((field) => {
+          const key = field.name;
+          const files = req.files;
+          if (files[key]) {
+            if (field["maxCount"] !== undefined && field["maxCount"] == 1) {
+              req.body[key] = {
+                url: files[key][0].key,
+                thumbnail: files[key][0].key,
+                retina: files[key][0].key,
               };
-            });
+            } else {
+              req.body[key] = files[key].map((file) => {
+                return {
+                  url: file.key,
+                  thumbnail: file.key,
+                  retina: file.key,
+                };
+              });
+            }
           }
-        }
-      });
+        });
+      }
 
       next();
     });

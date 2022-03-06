@@ -1,6 +1,7 @@
 //const winston = require('winston');
 const express = require("express");
 const app = express();
+require("express-async-errors");
 const winston = require("winston");
 const config = require("config");
 
@@ -12,10 +13,6 @@ if (process.env.NODE_ENV == "production") {
 
 if (process.env.NODE_ENV != "production") {
   require("./startup/dev")(app);
-  app.use(
-    `/${config.get("uploadDir")}`,
-    express.static(`${__dirname}/${config.get("uploadDir")}`)
-  );
 }
 
 require("./startup/config")();

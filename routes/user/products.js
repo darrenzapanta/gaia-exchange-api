@@ -13,16 +13,12 @@ const validateParams = require("../../middleware/validateParams");
 
 //base path /api/user/:displayName/products"
 
-const productFields = "title description category owner featuredImage status";
-
-router.use(auth);
+const productFields = "title description categories owner featuredImage status";
 
 router.get("/", async (req, res) => {
   const { page, skip, limit } = validatePagination(req);
 
-  console.log("id", req.user.id);
-
-  const query = { "owner.id": req.user._id };
+  const query = { "owner._id": req.user._id };
 
   const products = await Product.find(query)
     .select(productFields)
@@ -48,26 +44,27 @@ const imageMiddlewareFields = [
 ];
 
 router.post("/", imageMiddleware(imageMiddlewareFields), async (req, res) => {
+  console.log(req.body);
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
   let product = await Product.findOne({
     title: req.body.title,
-    "owner.id": req.user._id,
+    "owner._id": req.user._id,
   });
   if (product)
     return res.status(400).send("Cannot Create Product - Duplicate Product");
 
   const data = req.body;
   data.owner = {
-    id: req.user._id,
+    _id: req.user._id,
     displayName: req.user.displayName,
   };
 
   product = new Product(
     _.pick(req.body, [
       "title",
-      "category",
+      "categories",
       "collections",
       "images",
       "description",
@@ -101,6 +98,37 @@ router.delete("/:id", async (req, res) => {
     _id: id,
     "owner.id": user_id,
   });
+  if (!product) return res.status(400).send("Product not found");
+
+  return res.send(product);
+});
+
+router.put("/:id", imageMiddleware(imageMiddlewareFields), async (req, res) => {
+  const id = req.params.id;
+  const user_id = req.user._id;
+
+  if (req.body.existingImages) {
+    const existingImage = JSON.parse(req.body.existingImages);
+    if (req.body.images) {
+      req.body.images = [...req.body.images, ...existingImage];
+    } else {
+      req.body.images = existingImage;
+    }
+
+    req.body = _.omit(req.body, ["existingImages"]);
+  }
+
+  const { error } = validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+
+  const product = await Product.findOneAndUpdate(
+    {
+      _id: id,
+      "owner.id": user_id,
+    },
+    req.body,
+    { new: true }
+  );
   if (!product) return res.status(400).send("Product not found");
 
   return res.send(product);

@@ -5,6 +5,7 @@ const bcrypt = require("bcrypt");
 const _ = require("lodash");
 const auth = require("../../middleware/auth");
 const products = require("./products");
+const offers = require("./offers");
 
 //base path /api/user
 
@@ -48,6 +49,9 @@ router.post("/register", async (req, res) => {
   return res.header("x-auth-header", token).send({ accessToken: token });
 });
 
+router.use(auth);
+
 router.use("/:displayName/products", products);
+router.use("/offers", offers);
 
 module.exports = router;
